@@ -12,7 +12,7 @@ $(document).ready(function()
 		return;
 	}
 
-	var script = $("<script type='text/javascript' src = '../jengine/main.js' ></script>").appendTo('head');	
+	var script = $("<script type='text/javascript' src = '"+config['jenginePath']+"/main.js' ></script>").appendTo('head');	
 	script.attr( 'onLoad', function() { jengineStart() } );
 	var script2 = $("<script type='text/javascript' src = 'http://code.createjs.com/soundjs-0.4.0.min.js' ></script>").appendTo('head');
 	var handle = setInterval(function()

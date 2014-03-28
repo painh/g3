@@ -2,17 +2,18 @@
 
 $config = [];
 
-$config["width"] = 240;
-$config["height"] = 320;
+$config["width"] = 320;
+$config["height"] = 500;
 $config['screenScale'] = 1;
-$config["fps"] = 30;
+$config["fps"] = 60;
 $config["resLoadWaitTerm"] = 30;
-$config["jenginePath"] = "../jengine/";
+$config["jenginePath"] = "../../jengine/";
 $config["gameDivAlign"] = "center";
 $config["srcPath"] = "./";
 $config['showLogOnDebugger'] = true;
 $config['showLogOnConsole'] = true;
 $config['needInstall'] = false;
+$config['title'] = '2048 snake';
 
 $js_list = [
 	$config["srcPath"].'scene/effect.js',
@@ -27,17 +28,15 @@ echo <<< EOF
 <!DOCTYPE html>
 <html>
 	<head profile="http://www.w3.org/2005/10/profile">
-	<link rel="icon" 
-	      type="image/png" 
-		        href="img/57x57.png">
-		<title>1 way rpg</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no">
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<link rel="apple-touch-icon-precomposed" href="img/57x57.png"/>
-		<link href="style.css" rel="stylesheet" type="text/css"/>
-		<script>
-		var config = new Object;
+	<link rel="icon" type="image/png" href="img/57x57.png">
+	<title>{$config['title']}</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-icon-precomposed" href="img/57x57.png"/>
+	<link href="style.css" rel="stylesheet" type="text/css"/>
+	<script>
+	var config = new Object;
 EOF;
 foreach($config as $key => $val)
 	echo("config['{$key}'] = '{$val}';");
