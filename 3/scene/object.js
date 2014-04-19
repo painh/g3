@@ -14,12 +14,11 @@ var g_sizeTable = [ {r : 0, c : '#FF50CF'},
 					{r : 12, c : '#FF33AA'}
 				];
 
-var size = 15;
-for(var i  in g_sizeTable)
-{
-	g_sizeTable[i].r = size;
-	size += 2;
-}
+var g_colorTable = ['#FF50CF', '#FFCF50', '#50FFCF', '#CF50FF', '#CFFF00'];
+//var g_colorTable = ['#FF50CF', '#FFCF50', '#50FFCF'];
+
+var g_minSize = 15;
+
 var Obj = function()
 {
 	this.screenPos = 0;
@@ -136,7 +135,7 @@ var Obj = function()
 
 		var textWidth = Renderer.GetTextWidth(this.screenPos);
 		Renderer.SetColor('#ffffff');
-		Renderer.Text(x, y , this.r);
+		Renderer.Text(x, y , this.grade);
 //		Renderer.Text(x + TILE_WIDTH / 2 - textWidth / 2, 
 //						y + TILE_HEIGHT / 2 - Renderer.GetFontSize() / 2 , this.hp);
 	}
@@ -144,11 +143,20 @@ var Obj = function()
 	this.Combine = function(obj)
 	{
 		obj.isDead = true;
-		this.grade++;
-		if(this.grade >= g_sizeTable.length)
-			this.grade = g_sizeTable.length - 1;
-		this.r = g_sizeTable[this.grade].r;
-		this.color = g_sizeTable[this.grade].c; 
+		if(obj.grade == this.grade)
+		{
+			this.grade++;
+			this.color = g_colorTable[randomRange(0, g_colorTable.length - 1 )];
+			console.log('random color');
+		}
+		else
+		{
+			this.grade += obj.grade;
+//			this.color = g_colorTable[this.grade % g_colorTable.length];
+			console.log('not random color');
+		}
+
+		this.r = this.grade + g_minSize;
 	}
 };
 
@@ -165,7 +173,7 @@ var ObjManager = function()
 		for(var i = 0; i < 5; ++i)
 		{
 			var g = randomRange(min, max);
-			var r = g_sizeTable[g].r * 2;
+			var r = g  + g_minSize;
 			if(this.Add(g, randomRange(r, Renderer.width - r), randomRange(r, Renderer.height - r)) !== null)
 				return;
 		}
@@ -178,8 +186,10 @@ var ObjManager = function()
 		obj.x = x;
 		obj.y = y;
 		obj.grade = grade;
-		obj.r = g_sizeTable[grade].r;
-		obj.color = g_sizeTable[grade].c;
+		obj.r = grade  + g_minSize;
+		obj.color = g_colorTable[randomRange(0, g_colorTable.length - 1 )];
+
+		//obj.color = g_colorTable[grade % g_colorTable.length];
 
 		var total = 0;
 		for(var i in this.m_list)
@@ -257,7 +267,7 @@ var ObjManager = function()
 		for(var i in this.m_list)
 		{
 			var item = this.m_list[i];
-			if(item.scaleState == 'dead')
+			if(item.scaleState == 'dead' || obj.scaleState == 'dead')
 				continue;
 			if(item == obj)
 				continue;
@@ -268,13 +278,11 @@ var ObjManager = function()
 
 			if(d <= item.r + obj.r)
 			{
-				if(item.r < obj.r)
-					smaller_list.push(item);
-
-				if(item.r == obj.r)
-					same_list.push(item);
-
-				if(item.r > obj.r)
+				if(item.r == obj.r || (obj.color == item.color))
+					same_list.push(item); 
+				else if(item.grade < obj.grade)
+					smaller_list.push(item); 
+				else if(item.grade > obj.grade)
 					larger_list.push(item);
 			}
 		}
@@ -284,17 +292,17 @@ var ObjManager = function()
 			for(var i in smaller_list)
 			{
 				smaller_list[i].scaleState = 'dead';
-				ret.score -= smaller_list[i].r;
+				ret.score -= smaller_list[i].grade * 2;
 			}
 		}
 		else if(same_list.length > 0)
 		{
-			ret.score += same_list[0].r;
+			ret.score += same_list[0].grade;
 			obj.Combine(same_list[0]);
 		} else if(larger_list.length > 0)
 		{
 			obj.scaleState = 'dead';
-			ret.score -= larger_list[0].r;
+			ret.score -= larger_list[0].grade * 2;
 			ret.pick_obj = null;
 		}
 		ret.smaller_cnt = smaller_list.length;
@@ -345,4 +353,14 @@ var ObjManager = function()
 		for(var i in this.m_list)
 			this.m_list[i].Unpicked();
 	} 
+
+	this.GetGradeCount = function(g)
+	{
+		var ret = 0;
+		for(var i in this.m_list)
+			if(this.m_list[i].grade == g)
+				ret++;
+
+		return ret;
+	}
 }; 

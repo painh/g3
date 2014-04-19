@@ -34,13 +34,19 @@ var SceneIngame = function()
 		this.world_moving_prev_y = 0;
 		this.world_moving_enable = false; 
 		this.score = 0;
-		this.turn = 30;
+		this.need_score = 500;
+		this.turn = 15;
 		this.combo = 0;
 	
 		g_objList.Clear();
 		for(var i = 0; i < 10; ++i)
-				g_objList.RandomGenerate(5, g_sizeTable.length - 1);
+				g_objList.RandomGenerate(5, 30);
 		console.log('start!');
+
+		this.clearCondition = [];
+		this.clearCondition[11] = 2;
+		this.clearCondition[27] = 1;
+		this.clearCondition[10] = 3;
 	}
 	
 	this.End = function()
@@ -49,6 +55,9 @@ var SceneIngame = function()
 	
 	this.Update = function()
 	{ 
+		if(this.state =='win')
+			return;
+
 		if(this.state =='gameOver')
 			return;
 
@@ -136,6 +145,20 @@ var SceneIngame = function()
 					this.combo++; 
 					if(this.combo >= 2)
 						this.score += this.combo * 100;
+
+					var cnt = 0, max_cnt = 0;;
+					for(var i in this.clearCondition) 
+					{
+						max_cnt++;
+						if( g_objList.GetGradeCount(i) ==  this.clearCondition[i])
+							cnt++;
+					}
+					console.log('win con : ');
+					console.log(cnt);
+					console.log(this.clearCondition.length);
+					if(cnt == max_cnt && this.score >= this.need_score)
+						this.state = 'win';
+
 				}
 
 				return;
@@ -169,8 +192,11 @@ var SceneIngame = function()
 		this.combo = 0;
 		g_pickedObj = null;
 		g_objList.ClearPickedObj();
-		g_objList.RandomGenerate(0, 10);
+		g_objList.RandomGenerate(1, 10);
 		this.turn--;
+
+		if(this.turn <= 0)
+			this.state = 'gameOver';
 	}
 	
 	this.Render = function()
@@ -201,9 +227,16 @@ var SceneIngame = function()
 		Renderer.SetAlpha(1.0); 
 		Renderer.SetColor("#000000"); 
 //		Renderer.Text(0, 0, g_cameraX + "," + g_cameraY + "," + this.world_moving);
-		Renderer.Text(0, 0, 'score : ' + this.score + " / turn " + this.turn + " / total " + g_objList.total_point);
-		if(this.combo >= 2)
-		Renderer.Text(0, Renderer.height - 20, 'combom : ' + this.combo);
+		Renderer.Text(0, 0, 'score : ' + this.score + " / " + this.need_score + " / turn " + this.turn + " / total " + g_objList.total_point);
+		var cnt = 0;
+		for(var i in this.clearCondition) 
+		{
+			Renderer.Text(0, 20 + 20 * cnt, i + ' : ' + g_objList.GetGradeCount(i) + ' / ' + this.clearCondition[i]);
+			cnt++;
+		}
+
+//		if(this.combo >= 2)
+		Renderer.Text(0, Renderer.height - 20, 'combom : ' + this.combo + ', ' + this.state);
 		if(this.state == 'title')
 		{
 			Renderer.SetAlpha(0.5); 
@@ -216,10 +249,23 @@ var SceneIngame = function()
 			Renderer.Text(100, 200, this.title_cnt + " left"); 
 		}
 
+		if(this.state == 'win')
+		{
+			Renderer.SetAlpha(0.5); 
+			Renderer.SetColor("#000000"); 
+			Renderer.Rect(0, 0, Renderer.width, Renderer.height);
+			Renderer.SetAlpha(1); 
+			Renderer.SetColor("#ffffff"); 
+			Renderer.SetFont('16pt Arial');
+			Renderer.Text(24, 150, "win"); 
+		} 
 		if(this.state == 'gameOver')
 		{
+			Renderer.SetAlpha(0.5); 
+			Renderer.SetColor("#000000"); 
+			Renderer.Rect(0, 0, Renderer.width, Renderer.height);
 			Renderer.SetAlpha(1); 
-			Renderer.SetColor("#ff0000"); 
+			Renderer.SetColor("#ffffff"); 
 			Renderer.SetFont('16pt Arial');
 			Renderer.Text(24, 150, "Game Over"); 
 		} 
